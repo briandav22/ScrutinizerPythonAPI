@@ -6,10 +6,10 @@ from scrut_api import *
 client = scrut_api_client(
          hostname="some_srutinizer_hostname", 
          authToken="some_scrutinizer_authToken")
-         
+
 #set up report JSON. 
 
-report_object = scrut_json(filters = {'sdfDips_0': 'in_GROUP_ALL'})
+report_object = scrut_json()
 report_format = scrut_data_requested()
 
 
