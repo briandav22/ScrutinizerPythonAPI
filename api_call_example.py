@@ -4,12 +4,14 @@ from scrut_api import *
 
 # initiate Scurtinizer client. 
 client = scrut_api_client(
-         hostname="some_scrutinizer_ip", 
-         authToken="some_auth_token")
+         hostname="some_srutinizer_hostname", 
+         authToken="some_scrutinizer_authToken")
+         
 #set up report JSON. 
 
-report_object = scrut_json()
+report_object = scrut_json(filters = {'sdfDips_0': 'in_GROUP_ALL'})
 report_format = scrut_data_requested()
+
 
 #load up params to be passed to request
 params = scrut_params(
@@ -24,3 +26,4 @@ response = scrut_request(params)
 
 #print out the data formatted. 
 scrut_print(response.data)
+
