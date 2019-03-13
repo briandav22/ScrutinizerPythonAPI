@@ -7,7 +7,7 @@ To get started with you will need to clone the repo first.
 
 ```git clone https://github.com/briandav22/ScrutinizerPythonAPI.git```
 
-once instead this directory. install the requirments. 
+once instead this directory. Install the requirments. 
 
 ```pip install -r requirments.txt``` 
 
@@ -15,6 +15,6 @@ You can now build your own script following the documentation, or you can modify
 
 ```python api_call_example.py```
 
-This library uses Python 3 and up. 
+Keep in mind this script uses python3. 
 
 
