@@ -7,11 +7,11 @@ To get started with you will need to clone the repo first.
 
 ```git clone https://github.com/briandav22/ScrutinizerPythonAPI.git```
 
-once instead this directory. Install the requirments. 
+once inside this directory. Install the requirments. 
 
 ```pip install -r requirments.txt``` 
 
-You can now build your own script following the documentation, or you can modify the api_call_example.py script with your Scrutinizer Hostname and authToken as a way to get started quickly. Once modified you can run it with 
+You can now build your own script following the documentation, or you can modify the api_call_example.py script with your Scrutinizer hostname and authToken as a way to get started quickly. Once modified you can run it with 
 
 ```python api_call_example.py```
 
