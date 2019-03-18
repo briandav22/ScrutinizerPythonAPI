@@ -13,14 +13,14 @@ report_format = scrut_data_requested()
 
 
 #load up params to be passed to request
-params = scrut_params(
+request = scrut_request(
     client=client,
     json_data = report_object.report_json,
     data_requested=report_format.format
 
 )
 
-response = scrut_request(params)
+response = request.send()
 
 
 #print out the data formatted. 

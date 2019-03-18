@@ -23,7 +23,6 @@ class scrut_api_client:
         self.verify = verify
         self.authToken = authToken
 
-
 class scrut_json:
     '''
     Used to generate JSON data that will be posted to scrutinizers API. All arguments that are passed have default sets, you can modify any of them you choose. 
@@ -81,7 +80,7 @@ class scrut_data_requested:
         self.format = data_requested
 
 
-class scrut_params:
+class scrut_request:
     '''This class binds together the client, with the json_data, and the data_requested. whatever variable you use to initate this class will be passted into scrut_request'''
     def __init__(self,
                  run_mode="report_api",
@@ -112,14 +111,22 @@ class scrut_params:
 
                 self.url = client.url
                 self.verify = client.verify
+    
+    def send(self):
+        response = requests.get(
+            self.url, params=self.data_for_req, verify=self.verify)
+        #we should really do something to verify the response...
+        return scrut_response(response)
 
-
-class scrut_request:
-    '''Handles the request portion of the api call. This uses the requests library from python. The .resp property holds the request object and the .data property holds it converted to JSON'''
-    def __init__(self, params):
-        self.resp = requests.get(
-            params.url, params=params.data_for_req, verify=params.verify)
+class scrut_response:
+    '''Handles the request portion of the api call. This uses the requests library from python.
+       The .resp property holds the request object and the .data property holds it converted to JSON'''
+    def __init__(self, response):
+        self.resp = response
         self.data = self.resp.json()
+
+    def get_data(self):
+        return self.data
 
 
 class scrut_print:
