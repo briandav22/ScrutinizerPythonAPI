@@ -22,8 +22,8 @@ request = scrut_request(
 
 response = request.send()
 
-
-#print out the data formatted. 
-for ip_address in response.data['report']['table']['inbound']['rows']:
+#print out the data formatted.
+data = response.get_data()
+for ip_address in data['report']['table']['inbound']['rows'] :
     print('Source IP Address: ' + ip_address[1]['label'])
 
