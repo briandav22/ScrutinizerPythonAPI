@@ -119,7 +119,7 @@ class scrut_request:
         return scrut_response(response)
 
 class scrut_response:
-    '''Handles the request portion of the api call. This uses the requests library from python.
+    '''Handles the redsponse portion of the api call. This uses the requests library from python.
        The .resp property holds the request object and the .data property holds it converted to JSON'''
     def __init__(self, response):
         self.resp = response
