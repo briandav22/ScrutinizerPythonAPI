@@ -13,17 +13,17 @@ report_format = scrut_data_requested()
 
 
 #load up params to be passed to request
-params = scrut_params(
+request = scrut_request(
     client=client,
     json_data = report_object.report_json,
     data_requested=report_format.format
 
 )
 
-response = scrut_request(params)
+response = request.send()
 
-
-#print out the data formatted. 
-for ip_address in response.data['report']['table']['inbound']['rows']:
+#print out the data formatted.
+data = response.get_data()
+for ip_address in data['report']['table']['inbound']['rows'] :
     print('Source IP Address: ' + ip_address[1]['label'])
 
