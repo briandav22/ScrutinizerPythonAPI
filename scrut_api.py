@@ -5,56 +5,57 @@ import json
 requests.packages.urllib3.disable_warnings()
 
 
-class scrut_api_client:
-    #class used to initiated the Scrutinizer client
-    def __init__(
-            self,
-            verify=False,
-            hostname="",
-            authToken=""):
-        if hostname == "Scrutinizer Hostname or IP Here":
-            raise ValueError(
-                "You need to put in Scrutinizer host IP in settings.json")
-        if authToken == "API KEY HERE":
-            raise ValueError(
-                "You need an authentication token in settings.json")
 
-        self.url = "https://{}/fcgi/scrut_fcgi.fcgi".format(hostname)
-        self.verify = verify
-        self.authToken = authToken
+class ReportAPI:
+    def __init__(self):
+        
+        self.options = {
 
-
-class scrut_json:
-    '''
-    Used to generate JSON data that will be posted to scrutinizers API. All arguments that are passed have default sets, you can modify any of them you choose. 
-
-    If you want to add in other JSON calls to api you would need to add property with that json and reference it when you send the data into the scrut_params class. 
-
-    self.status_json is an example of this. 
-    
-    
-    '''
-    def __init__(
-        self,
-        reportTypeLang="conversationsApp",
-        reportDirections={"selected": "inbound"},
-        dataGranularity={"selected": "auto"},
-        orderBy="sum_octetdeltacount",
-        times={"dateRange": "LastTenMinutes"},
-        filters={
-            "sdfDips_0": "in_GROUP_ALL"
-        },
-        rateTotal={"selected": "rate"},
-        dataFormat={"selected": "normal"},
-        bbp={"selected": "percent"},
-        view="topInterfaces",
-        unit="percent"):
-
-        self.report_json = {
+            "reportTypeLang": "conversationsApp",
+            "reportDirections": {"selected": "inbound"},
+            "dataGranularity": {"selected": "auto"},
+            "orderBy": "sum_octetdeltacount",
+            "times": {"dateRange": "LastTenMinutes"},
+            "filters": {
+                        "sdfDips_0": "in_GROUP_ALL"
+                    },
+            "rateTotal": {"selected": "rate"},
+            "dataFormat": {"selected": "normal"},
+            "bbp": {"selected": "percent"},
+            "view":"topInterfaces",
+            "unit":"percent"
+        }
+        self.direction = {
+            "inbound": {
+                "graph": "all",
+                "table": {
+                    "query_limit": {
+                        "offset": 0,
+                        "max_num_rows": 10
+                    }
+                }
+            }
+        }
+        self.params = None
+    def report_options(self,
+                    reportTypeLang="conversationsApp",
+                    reportDirections= "inbound",
+                    dataGranularity="auto",
+                    orderBy="sum_octetdeltacount",
+                    times={"dateRange": "LastTenMinutes"},
+                    filters={
+                        "sdfDips_0": "in_GROUP_ALL"
+                    },
+                    rateTotal={"selected": "rate"},
+                    dataFormat={"selected": "normal"},
+                    bbp={"selected": "percent"},
+                    view="topInterfaces",
+                    unit="percent"):
+        self.options = {
 
             "reportTypeLang": reportTypeLang,
-            "reportDirections": reportDirections,
-            "dataGranularity": dataGranularity,
+            "reportDirections": {"selected": reportDirections},
+            "dataGranularity": {"selected": dataGranularity},
             "orderBy": orderBy,
             "times": times,
             "filters": filters,
@@ -63,63 +64,94 @@ class scrut_json:
             "bbp": bbp
         }
 
-        self.status_json = {
-            "view": view,
-            "unit": unit
+    def report_direction(self, report_direction="inbound", max_rows=10):
+        self.direction = {
+            report_direction: {
+                "graph": "all",
+                "table": {
+                    "query_limit": {
+                        "offset": 0,
+                        "max_num_rows": max_rows
+                    }
+                }
+            }
         }
 
 
-class scrut_data_requested:
-    ''' Currently this class is only used when your using the report_json property. The scrut_params class is what will receive this data, it has error checking to make sure the .format property is passed if the user is sending report_json, if the user is sending status_json the then this data will be ignored (as it is not needed)'''
-    def __init__(self,
-                 data_requested={"inbound": {
-                     "table": {
-                         "query_limit": {"offset": 0, "max_num_rows": 10}
-                     }
-                 }
-                 }):
-        self.format = data_requested
+    def make_object(self):
+        self.params = {
+            "rm":"report_api",
+            "action":"get",
+            "rpt_json":json.dumps(self.options),
+            "data_requested":json.dumps(self.direction)
+        }
 
 
-class scrut_params:
-    '''This class binds together the client, with the json_data, and the data_requested. whatever variable you use to initate this class will be passted into scrut_request'''
-    def __init__(self,
-                 run_mode="report_api",
-                 action="get",
-                 json_data="",
-                 data_requested=None,
-                 client=""):
-                try:
-                    if json_data['view'] == "topInterfaces":
-                        self.data_for_req = {
-                                "rm": "status",
-                                "action": action,
-                                "rpt_json": json.dumps(json_data),
-                                "authToken": client.authToken
-                                }
-                except:
-                     if isinstance(data_requested, scrut_data_requested):
-                         raise ValueError('Make sure the instance of scrut_data_requested is passed with the .format property')
-                     else:
-                        self.data_for_req = {
-                            "rm": run_mode,
-                            "action": action,
-                            "rpt_json": json.dumps(json_data),
-                            "data_requested": json.dumps(data_requested),
-                            "authToken": client.authToken
-                                }
 
+class Requester:
+    def __init__(self, authToken=None, hostname=None):
+        self.authToken = authToken
+        self.hostname = hostname
 
-                self.url = client.url
-                self.verify = client.verify
+    def error_checker(self, json):
+        # error handler
+        if 'err' in json:
+            error_msg = json['err']
+            if 'details' in json:
+                error_details = json['details']
+                print("Looks like you API key may not be valid, I received this back\nError: {}\nDetails: {},\nAPI Key: {}".format(
+                    error_msg, error_details, self.authToken))
+                return
+            else:
+                print("Did you pass an API key? Recieved this Error\nError: {}\nAPI Key: {}".format(
+                    error_msg, self.authToken))
+                return
 
+    def verify_https(self, response, params):
+        # used so the user doesn't have to worry about the URL to Scrutinizer, only the hostname.
+        try:
+            if response.history[0].status_code == 302:
+                r = requests.get(
+                    "https://{}/fcgi/scrut_fcgi.fcgi?".format(self.hostname), params=params, verify=False)
+                return r
+        except:
+            print("Seems you are running Scrutinizer in HTTP, consider enabling SSL for more secure use of the API")
+            return response
 
-class scrut_request:
-    '''Handles the request portion of the api call. This uses the requests library from python. The .resp property holds the request object and the .data property holds it converted to JSON'''
-    def __init__(self, params):
-        self.resp = requests.get(
-            params.url, params=params.data_for_req, verify=params.verify)
-        self.data = self.resp.json()
+    def intiated_check(self):
+        # checks to make sure the hostname and authtoken were passed
+        if self.hostname == None or self.authToken == None:
+            print("Did not receive either a Hostname or a Authoken when Class was initiated\nHere are the values I recieved: \nHostname:{} \nAuthtoken: {}".format(
+                self.hostname, self.authToken))
+            return True
+
+    def make_request(self, report_object):
+
+        # make sure user passed in hostname and authtoken
+        params = report_object.params
+        if self.intiated_check():
+            return
+        # add authToken to the Params
+        params['authToken'] = self.authToken
+
+        # make request to Scrutinizer
+        data_back = requests.get(
+            "http://{}/fcgi/scrut_fcgi.fcgi?".format(self.hostname), params=params, verify=False)
+
+        # check to see if user is using HTTPS, if they are, make request to HTTPS address.
+        response = self.verify_https(data_back, params)
+
+        # convert response to JSON.
+        response = response.json()
+
+        # check for any errors in the JSON response
+        if self.error_checker(response):
+            return
+
+        # return the response
+
+        return response
+
 
 
 class scrut_print:
